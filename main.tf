@@ -1,4 +1,5 @@
 resource "azuredevops_project" "myproject" {
+  count = var.remove ? 0 : 1
   name               = var.devops_project_name
   visibility         = var.public_project ? "public" : "private"
   version_control    = "Git"
@@ -9,7 +10,8 @@ locals {
   repo_name = length(var.repo_name) > 0 ? var.repo_name : "${var.devops_project_name}_repo"
 }
 resource "azuredevops_git_repository" "myrepo" {
-  project_id = azuredevops_project.myproject.id
+  count = var.remove ? 0 : 1
+  project_id = azuredevops_project.myproject[0].id
   name       = local.repo_name
   initialization {
     init_type = "Clean"
@@ -19,7 +21,8 @@ resource "azuredevops_git_repository" "myrepo" {
 # Disable unsued features
 # Todo: use vars to make it configurabe
 resource "azuredevops_project_features" "devops-features" {
-  project_id = azuredevops_project.myproject.id
+  count = var.remove ? 0 : 1
+  project_id = azuredevops_project.myproject[0].id
   features = {
     "testplans" = "disabled"
     "artifacts" = "disabled"
@@ -28,15 +31,17 @@ resource "azuredevops_project_features" "devops-features" {
 }
 
 data "azurerm_resource_group" "iac_rg" {
+  count = var.remove ? 0 : 1
   name = var.iac_ressources_rg
   provider = azurerm.iac_subscription
 }
 
 ## Storage account for TF states
 resource "azurerm_storage_account" "tf-state-bucket" {
+  count = var.remove ? 0 : 1
   name                = "${var.resource_prefix}tfs"
-  resource_group_name = data.azurerm_resource_group.iac_rg.name
-  location            = data.azurerm_resource_group.iac_rg.location
+  resource_group_name = data.azurerm_resource_group.iac_rg[0].name
+  location            = data.azurerm_resource_group.iac_rg[0].location
   blob_properties {
     versioning_enabled = true
   }

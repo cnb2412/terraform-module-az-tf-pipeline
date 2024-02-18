@@ -36,3 +36,9 @@ variable "iac_ressources_rg" {
   description = "RG in which the IaC ressources, e.g. TF State storage account, are deployed"
   type        = string
 }
+
+variable "remove" {
+    type = bool
+    default = false
+    description = "Option to remove everything. Required to avoid provider removed issues."
+}
