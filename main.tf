@@ -30,24 +30,24 @@ resource "azuredevops_project_features" "devops-features" {
   }
 }
 
-data "azurerm_resource_group" "iac_rg" {
-  count = var.remove ? 0 : 1
-  name = var.iac_ressources_rg
-  provider = azurerm.iac_subscription
-}
+# data "azurerm_resource_group" "iac_rg" {
+#   count = var.remove ? 0 : 1
+#   name = var.iac_ressources_rg
+#   provider = azurerm.iac_subscription
+# }
 
-## Storage account for TF states
-resource "azurerm_storage_account" "tf-state-bucket" {
-  count = var.remove ? 0 : 1
-  name                = "${var.resource_prefix}tfs"
-  resource_group_name = data.azurerm_resource_group.iac_rg[0].name
-  location            = data.azurerm_resource_group.iac_rg[0].location
-  blob_properties {
-    versioning_enabled = true
-  }
-  account_tier                     = "Standard"
-  account_replication_type         = "GRS"
-  cross_tenant_replication_enabled = false
-  enable_https_traffic_only        = true
-  provider = azurerm.iac_subscription
-}
+# ## Storage account for TF states
+# resource "azurerm_storage_account" "tf-state-bucket" {
+#   count = var.remove ? 0 : 1
+#   name                = "${var.resource_prefix}tfs"
+#   resource_group_name = data.azurerm_resource_group.iac_rg[0].name
+#   location            = data.azurerm_resource_group.iac_rg[0].location
+#   blob_properties {
+#     versioning_enabled = true
+#   }
+#   account_tier                     = "Standard"
+#   account_replication_type         = "GRS"
+#   cross_tenant_replication_enabled = false
+#   enable_https_traffic_only        = true
+#   provider = azurerm.iac_subscription
+# }
