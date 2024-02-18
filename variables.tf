@@ -3,7 +3,7 @@ variable "org_service_url" {
   description = "Azure DevOps Service URL where the repo should be created"
 }
 
-variable "project_name" {
+variable "devops_project_name" {
   description = <<EOF
     Name of the project on Azure DevOps
   EOF
@@ -22,3 +22,17 @@ variable "repo_name" {
   default     = ""
 }
 
+variable "resource_prefix" {
+  description = "A resource type postfix is appended to the individual iac ressources."
+  type        = string
+}
+
+variable "iac_resources_sub" {
+  description = "Subscription in which the IaC ressources, e.g. TF State storage account, are deployed"
+  type        = string
+}
+
+variable "iac_ressources_rg" {
+  description = "RG in which the IaC ressources, e.g. TF State storage account, are deployed"
+  type        = string
+}
