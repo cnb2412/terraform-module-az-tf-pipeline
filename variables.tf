@@ -1,3 +1,8 @@
+variable "org_service_url" {
+  type        = string
+  description = "Azure DevOps Service URL where the repo should be created"
+}
+
 variable "project_name" {
   description = <<EOF
     Name of the project on Azure DevOps
@@ -8,12 +13,12 @@ variable "project_name" {
 variable "public_project" {
   description = "Is this a public project? Default: false"
   type        = bool
-  default = false
+  default     = false
 }
 
 variable "repo_name" {
   description = "Name of the repository."
   type        = string
-  default = ""
+  default     = ""
 }
 
