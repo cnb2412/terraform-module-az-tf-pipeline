@@ -12,7 +12,7 @@ variable "public_project" {
 }
 
 variable "repo_name" {
-  description = "Name of the repository."
+  description = "Name of the repository. Default: \${var.project_name}_repo"
   type        = string
-  default = ""
+  default = "${var.project_name}_repo"
 }

@@ -1,6 +1,6 @@
 resource "azuredevops_project" "myproject" {
   name               = var.project_name
-  visibility         = vat.public_project ? "public" : "private"
+  visibility         = var.public_project ? "public" : "private"
   version_control    = "Git"
   work_item_template = ""
 }
