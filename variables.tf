@@ -38,7 +38,31 @@ variable "iac_ressources_rg" {
 }
 
 variable "remove" {
-    type = bool
-    default = false
-    description = "Option to remove everything. Required to avoid provider removed issues."
+  type = bool
+  default = false
+  description = "Option to remove everything. Required to avoid provider removed issues."
+}
+
+variable "create_service_principle_prod" {
+  type = bool
+  default = false
+  description = "Create service principle fot prod deployment"
+}
+
+variable "create_service_principle_test" {
+  type = bool
+  default = false
+  description = "Create service principle fot test deployment"
+}
+
+variable "service_principle_owner_prod" {
+  type        = string
+  description = "Email of the owner of the prod service principle"
+  default = ""
+}
+
+variable "service_principle_owner_test" {
+  type        = string
+  description = "Email of the owner of the test service principle"
+  default = ""
 }
