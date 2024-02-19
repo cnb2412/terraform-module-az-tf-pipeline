@@ -16,10 +16,6 @@ terraform {
   }
 }
 
-provider "azuread" {
-  # Configuration options
-}
-
 provider "azuredevops" {
   org_service_url = var.org_service_url
 }
