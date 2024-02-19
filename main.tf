@@ -3,7 +3,7 @@ resource "azuredevops_project" "myproject" {
   name               = var.devops_project_name
   visibility         = var.public_project ? "public" : "private"
   version_control    = "Git"
-  work_item_template = ""
+  work_item_template = "Basic"
     features = {
     "testplans" = "disabled"
     "artifacts" = "disabled"
