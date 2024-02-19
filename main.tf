@@ -4,6 +4,11 @@ resource "azuredevops_project" "myproject" {
   visibility         = var.public_project ? "public" : "private"
   version_control    = "Git"
   work_item_template = ""
+    features = {
+    "testplans" = "disabled"
+    "artifacts" = "disabled"
+    "boards"    = "disabled"
+  }
 }
 
 locals {
@@ -15,18 +20,6 @@ resource "azuredevops_git_repository" "myrepo" {
   name       = local.repo_name
   initialization {
     init_type = "Clean"
-  }
-}
-
-# Disable unsued features
-# Todo: use vars to make it configurabe
-resource "azuredevops_project_features" "devops-features" {
-  count = var.remove ? 0 : 1
-  project_id = azuredevops_project.myproject[0].id
-  features = {
-    "testplans" = "disabled"
-    "artifacts" = "disabled"
-    "boards"    = "disabled"
   }
 }
 
