@@ -26,7 +26,7 @@ resource "azuread_service_principal" "az_sp_prod" {
   count = var.create_service_principle_prod ? 1 : 0
   client_id               = azuread_application.az_devoops_app_prod[0].client_id
   app_role_assignment_required = false
-  owners       = length(var.service_principle_owner_prod) > 0 ? [data.azuread_user.sp_owner_test[0].object_id] : []
+  owners       = length(var.service_principle_owner_prod) > 0 ? [data.azuread_user.sp_owner_prod[0].object_id] : []
   description = "Used by Azure DevOps Project ${var.devops_project_name} to deploy to prod. Created by TF." 
 }
 
