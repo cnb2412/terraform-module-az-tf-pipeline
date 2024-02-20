@@ -38,6 +38,16 @@ data "azurerm_resource_group" "iac_rg" {
 data "azurerm_subscription" "current" {
 }
 
+data "azurerm_subscription" "deployment_prod" {
+  count = length(var.deployment_prod_sub_id) > 0 ? 1 : 0
+  subscription_id = var.deployment_prod_sub_id
+}
+
+data "azurerm_subscription" "deployment_test" {
+  count = length(var.deployment_test_sub_id) > 0 ? 1 : 0
+  subscription_id = var.deployment_test_sub_id
+}
+
 /******************************************
   Azure DevOps project: Service Connection
 *******************************************/
@@ -108,13 +118,13 @@ resource "azurerm_federated_identity_credential" "test" {
 
 resource "azurerm_role_assignment" "az_sa_role_assignment_prod" {
   count = !var.remove && var.create_service_principle_prod ? 1 : 0
-  scope              = var.deployment_prod_sub_id
+  scope              = data.azurerm_subscription.deployment_prod[0].id
   role_definition_name = "Contributor"
   principal_id       = azurerm_user_assigned_identity.managed_identity_prod[0].principal_id
 }
 resource "azurerm_role_assignment" "az_sa_role_assignment_test" {
   count = !var.remove && var.create_service_principle_test ? 1 : 0
-  scope              = var.deployment_test_sub_id
+  scope              = data.azurerm_subscription.deployment_test[0].id
   role_definition_name = "Contributor"
   principal_id       = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
 }
