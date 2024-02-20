@@ -67,6 +67,18 @@ variable "service_principle_owner_test" {
   default = ""
 }
 
+variable "deployment_prod_tenant_id" {
+  type =  string
+  default = ""
+  description = "TenantId to which the prod workload should be deployed to. If not set, current Tenant is used."
+}
+
+variable "deployment_test_tenant_id" {
+  type =  string
+  default = ""
+  description = "TenantId to which the test workload should be deployed to. If not set, current Tenant is used."
+}
+
 variable "deployment_prod_sub" {
   type =  string
   default = ""

@@ -35,6 +35,9 @@ data "azurerm_resource_group" "iac_rg" {
   provider = azurerm.iac_subscription
 }
 
+data "azurerm_subscription" "current" {
+}
+
 /******************************************
   Azure DevOps project: Service Connection
 *******************************************/
@@ -51,64 +54,57 @@ resource "azurerm_user_assigned_identity" "managed_identity_test" {
   resource_group_name = var.iac_ressources_rg
 }
 
-# resource "azuredevops_serviceendpoint_azurerm" "example" {
-#   project_id                             = azuredevops_project.example.id
-#   service_endpoint_name                  = local.service_connection_name
-#   description                            = "Managed by Terraform"
-#   service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
-#   credentials {
-#     serviceprincipalid = azurerm_user_assigned_identity.example.client_id
-#   }
-#   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
-#   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
-#   azurerm_subscription_name = "Example Subscription Name"
-# }
+resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_prod" {
+  count = !var.remove && var.create_service_principle_prod ? 1 : 0
+  project_id                             = azuredevops_project.myproject[0].id
+  service_endpoint_name                  = "AzConn_Prod"
+  description                            = "Connection to AZ Prod. Managed by Terraform"
+  service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
+  credentials {
+    serviceprincipalid = azurerm_user_assigned_identity.managed_identity_prod[0].client_id
+  }
+  azurerm_spn_tenantid      = length(var.deployment_prod_tenant_id) > 0 ? var.deployment_prod_tenant_id : data.azurerm_subscription.current
+  azurerm_subscription_id   = var.deployment_prod_sub
+  azurerm_subscription_name = "Prod subscription"
+}
 
-# resource "azurerm_federated_identity_credential" "example" {
-#   name                = "example-federated-credential"
-#   resource_group_name = azurerm_resource_group.identity.name
-#   parent_id           = azurerm_user_assigned_identity.example.id
-#   audience            = ["api://AzureADTokenExchange"]
-#   issuer              = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_issuer
-#   subject             = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_subject
-# }
+resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_test" {
+  count = !var.remove && var.create_service_principle_test ? 1 : 0
+  project_id                             = azuredevops_project.myproject[0].id
+  service_endpoint_name                  = "AzConn_Test"
+  description                            = "Connection to AZ Test. Managed by Terraform"
+  service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
+  credentials {
+    serviceprincipalid = azurerm_user_assigned_identity.managed_identity_test[0].client_id
+  }
+  azurerm_spn_tenantid      = length(var.deployment_test_tenant_id) > 0 ? var.deployment_test_tenant_id : data.azurerm_subscription.current
+  azurerm_subscription_id   = var.deployment_test_sub
+  azurerm_subscription_name = "Test subscription"
+}
 
+resource "azurerm_federated_identity_credential" "prod" {
+  count = !var.remove && var.create_service_principle_prod ? 1 : 0
+  name                = "${var.resource_prefix}-federated-credential_prod"
+  resource_group_name = var.iac_ressources_rg
+  parent_id           = azurerm_user_assigned_identity.managed_identity_prod[0].id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].workload_identity_federation_issuer
+  subject             = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].workload_identity_federation_subject
+}
 
+resource "azurerm_federated_identity_credential" "test" {
+  count = !var.remove && var.create_service_principle_test ? 1 : 0
+  name                = "${var.resource_prefix}-federated-credential_test"
+  resource_group_name = var.iac_ressources_rg
+  parent_id           = azurerm_user_assigned_identity.managed_identity_test[0].id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_issuer
+  subject             = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_subject
+}
 
-
-
-
-
-
-
-
-# resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_prod" {
-#   count = !var.remove && var.create_service_principle_prod ? 1 : 0
-#   project_id = azuredevops_project.myproject[0].id
-#   service_endpoint_name                  = "AzConn_Prod"
-#   description                            = "Connection to AZ Test. Managed by Terraform"
-#   credentials {
-#     serviceprincipalid  = azuread_service_principal.az_sp_prod[0].object_id
-#     serviceprincipalkey = azuread_service_principal_password.az_sp_pwd_prod[0].value
-#   }
-#   azurerm_spn_tenantid          = azuread_service_principal.az_sp_prod[0].application_tenant_id
-#   azurerm_subscription_id   = var.deployment_prod_sub
-#   azurerm_subscription_name = "Prod subscription"
-# }
-# resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_test" {
-#   count = !var.remove && var.create_service_principle_test ? 1 : 0
-#   project_id = azuredevops_project.myproject[0].id
-#   service_endpoint_name                  = "AzConn_Test"
-#   description                            = "Connection to AZ Test. Managed by Terraform"
-#   credentials {
-#     serviceprincipalid  = azuread_service_principal.az_sp_test[0].object_id
-#     serviceprincipalkey = azuread_service_principal_password.az_sp_pwd_test[0].value
-#   }
-#   azurerm_spn_tenantid          = azuread_service_principal.az_sp_test[0].application_tenant_id
-#   azurerm_subscription_id   = var.deployment_test_sub
-#   azurerm_subscription_name = "Test subscription"
-# }
-
+/******************************************
+  TF IaC ressources
+*******************************************/
 
 # ## Storage account for TF states
 # resource "azurerm_storage_account" "tf-state-bucket" {
