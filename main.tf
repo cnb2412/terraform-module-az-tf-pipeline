@@ -64,7 +64,7 @@ resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_prod" {
     serviceprincipalid = azurerm_user_assigned_identity.managed_identity_prod[0].client_id
   }
   azurerm_spn_tenantid      = length(var.deployment_prod_tenant_id) > 0 ? var.deployment_prod_tenant_id : data.azurerm_subscription.current.tenant_id
-  azurerm_subscription_id   = var.deployment_prod_sub
+  azurerm_subscription_id   = var.deployment_prod_sub_id
   azurerm_subscription_name = "Prod subscription"
 }
 
@@ -78,7 +78,7 @@ resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_test" {
     serviceprincipalid = azurerm_user_assigned_identity.managed_identity_test[0].client_id
   }
   azurerm_spn_tenantid      = length(var.deployment_test_tenant_id) > 0 ? var.deployment_test_tenant_id : data.azurerm_subscription.current.tenant_id
-  azurerm_subscription_id   = var.deployment_test_sub
+  azurerm_subscription_id   = var.deployment_test_sub_id
   azurerm_subscription_name = "Test subscription"
 }
 
@@ -100,6 +100,23 @@ resource "azurerm_federated_identity_credential" "test" {
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_issuer
   subject             = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_subject
+}
+
+/******************************************
+  Permissions for managed identities
+*******************************************/
+
+resource "azurerm_role_assignment" "az_sa_role_assignment_prod" {
+  count = !var.remove && var.create_service_principle_prod ? 1 : 0
+  scope              = var.deployment_prod_sub_id
+  role_definition_name = "Contributor"
+  principal_id       = azurerm_user_assigned_identity.managed_identity_prod[0].principal_id
+}
+resource "azurerm_role_assignment" "az_sa_role_assignment_test" {
+  count = !var.remove && var.create_service_principle_test ? 1 : 0
+  scope              = var.deployment_test_sub_id
+  role_definition_name = "Contributor"
+  principal_id       = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
 }
 
 /******************************************

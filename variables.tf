@@ -79,13 +79,13 @@ variable "deployment_test_tenant_id" {
   description = "TenantId to which the test workload should be deployed to. If not set, current Tenant is used."
 }
 
-variable "deployment_prod_sub" {
+variable "deployment_prod_sub_id" {
   type =  string
   default = ""
   description = "Subscription to which the prod workload should be deployed to."
 }
 
-variable "deployment_test_sub" {
+variable "deployment_test_sub_id" {
   type =  string
   default = ""
   description = "Subscription to which the test workload should be deployed to."
