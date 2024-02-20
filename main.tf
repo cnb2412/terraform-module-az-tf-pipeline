@@ -27,8 +27,61 @@ resource "azuredevops_git_repository" "myrepo" {
 }
 
 /******************************************
+  Get some data from the Iac infra
+*******************************************/
+data "azurerm_resource_group" "iac_rg" {
+  count = var.remove ? 0 : 1
+  name = var.iac_ressources_rg
+  provider = azurerm.iac_subscription
+}
+
+/******************************************
   Azure DevOps project: Service Connection
 *******************************************/
+resource "azurerm_user_assigned_identity" "managed_identity_prod" {
+  count = !var.remove && var.create_service_principle_prod ? 1 : 0
+  location            = data.azurerm_resource_group.iac_rg[0].location
+  name                = "${var.resource_prefix}_p_id"
+  resource_group_name = var.iac_ressources_rg
+}
+resource "azurerm_user_assigned_identity" "managed_identity_test" {
+  count = !var.remove && var.create_service_principle_test ? 1 : 0
+  location            = data.azurerm_resource_group.iac_rg[0].location
+  name                = "${var.resource_prefix}_t_id"
+  resource_group_name = var.iac_ressources_rg
+}
+
+# resource "azuredevops_serviceendpoint_azurerm" "example" {
+#   project_id                             = azuredevops_project.example.id
+#   service_endpoint_name                  = local.service_connection_name
+#   description                            = "Managed by Terraform"
+#   service_endpoint_authentication_scheme = "WorkloadIdentityFederation"
+#   credentials {
+#     serviceprincipalid = azurerm_user_assigned_identity.example.client_id
+#   }
+#   azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
+#   azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
+#   azurerm_subscription_name = "Example Subscription Name"
+# }
+
+# resource "azurerm_federated_identity_credential" "example" {
+#   name                = "example-federated-credential"
+#   resource_group_name = azurerm_resource_group.identity.name
+#   parent_id           = azurerm_user_assigned_identity.example.id
+#   audience            = ["api://AzureADTokenExchange"]
+#   issuer              = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_issuer
+#   subject             = azuredevops_serviceendpoint_azurerm.example.workload_identity_federation_subject
+# }
+
+
+
+
+
+
+
+
+
+
 # resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_prod" {
 #   count = !var.remove && var.create_service_principle_prod ? 1 : 0
 #   project_id = azuredevops_project.myproject[0].id
@@ -56,11 +109,6 @@ resource "azuredevops_git_repository" "myrepo" {
 #   azurerm_subscription_name = "Test subscription"
 # }
 
-# data "azurerm_resource_group" "iac_rg" {
-#   count = var.remove ? 0 : 1
-#   name = var.iac_ressources_rg
-#   provider = azurerm.iac_subscription
-# }
 
 # ## Storage account for TF states
 # resource "azurerm_storage_account" "tf-state-bucket" {

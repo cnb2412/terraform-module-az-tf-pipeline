@@ -20,8 +20,8 @@ provider "azuredevops" {
   org_service_url = var.org_service_url
 }
 
-# provider "azurerm" {
-#   subscription_id = var.iac_resources_sub
-#   features {}
-#   alias = "iac_subscription"
-# }
+provider "azurerm" {
+  subscription_id = var.iac_resources_sub
+  features {}
+  alias = "iac_subscription"
+}
