@@ -63,7 +63,7 @@ resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_prod" {
   credentials {
     serviceprincipalid = azurerm_user_assigned_identity.managed_identity_prod[0].client_id
   }
-  azurerm_spn_tenantid      = length(var.deployment_prod_tenant_id) > 0 ? var.deployment_prod_tenant_id : data.azurerm_subscription.current
+  azurerm_spn_tenantid      = length(var.deployment_prod_tenant_id) > 0 ? var.deployment_prod_tenant_id : data.azurerm_subscription.current.tenant_id
   azurerm_subscription_id   = var.deployment_prod_sub
   azurerm_subscription_name = "Prod subscription"
 }
@@ -77,7 +77,7 @@ resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_test" {
   credentials {
     serviceprincipalid = azurerm_user_assigned_identity.managed_identity_test[0].client_id
   }
-  azurerm_spn_tenantid      = length(var.deployment_test_tenant_id) > 0 ? var.deployment_test_tenant_id : data.azurerm_subscription.current
+  azurerm_spn_tenantid      = length(var.deployment_test_tenant_id) > 0 ? var.deployment_test_tenant_id : data.azurerm_subscription.current.tenant_id
   azurerm_subscription_id   = var.deployment_test_sub
   azurerm_subscription_name = "Test subscription"
 }
