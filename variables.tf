@@ -46,13 +46,13 @@ variable "remove" {
 variable "create_service_principle_prod" {
   type = bool
   default = false
-  description = "Create service principle fot prod deployment"
+  description = "Create service principle DevOps service connection for prod deployment"
 }
 
 variable "create_service_principle_test" {
   type = bool
   default = false
-  description = "Create service principle fot test deployment"
+  description = "Create service principle and DevOps service connection for test deployment"
 }
 
 variable "service_principle_owner_prod" {
@@ -65,4 +65,16 @@ variable "service_principle_owner_test" {
   type        = string
   description = "Email of the owner of the test service principle"
   default = ""
+}
+
+variable "deployment_prod_sub" {
+  type =  string
+  default = ""
+  description = "Subscription to which the prod workload should be deployed to."
+}
+
+variable "deployment_test_sub" {
+  type =  string
+  default = ""
+  description = "Subscription to which the test workload should be deployed to."
 }

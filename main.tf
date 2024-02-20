@@ -1,3 +1,6 @@
+/******************************************
+  Azure DevOps project and repo
+*******************************************/
 resource "azuredevops_project" "myproject" {
   count = var.remove ? 0 : 1
   name               = var.devops_project_name
@@ -21,6 +24,36 @@ resource "azuredevops_git_repository" "myrepo" {
   initialization {
     init_type = "Clean"
   }
+}
+
+/******************************************
+  Azure DevOps project: Service Connection
+*******************************************/
+resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_prod" {
+  count = !var.remove && var.create_service_principle_prod ? 1 : 0
+  project_id = azuredevops_project.myproject[0].id
+  service_endpoint_name                  = "AzConn_Prod"
+  description                            = "Connection to AZ Test. Managed by Terraform"
+  credentials {
+    serviceprincipalid  = azuread_service_principal.az_sp_prod[0].object_id
+    serviceprincipalkey = azuread_service_principal_password.az_sp_pwd_prod[0].value
+  }
+  azurerm_spn_tenantid          = azuread_service_principal.az_sp_prod[0].application_tenant_id
+  azurerm_subscription_id   = var.deployment_prod_sub
+  azurerm_subscription_name = "Prod subscription"
+}
+resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_test" {
+  count = !var.remove && var.create_service_principle_test ? 1 : 0
+  project_id = azuredevops_project.myproject[0].id
+  service_endpoint_name                  = "AzConn_Test"
+  description                            = "Connection to AZ Test. Managed by Terraform"
+  credentials {
+    serviceprincipalid  = azuread_service_principal.az_sp_test[0].object_id
+    serviceprincipalkey = azuread_service_principal_password.az_sp_pwd_test[0].value
+  }
+  azurerm_spn_tenantid          = azuread_service_principal.az_sp_test[0].application_tenant_id
+  azurerm_subscription_id   = var.deployment_test_sub
+  azurerm_subscription_name = "Test subscription"
 }
 
 # data "azurerm_resource_group" "iac_rg" {
