@@ -203,7 +203,7 @@ resource "azuredevops_git_repository_file" "pipeline_file_prod" {
   repository_id       = azuredevops_git_repository.myrepo[0].id
   branch = azuredevops_git_repository.myrepo[0].default_branch
   file                = local.yml_path_prod
-  content             = templatefile("azure-pipelines-prod.yml", { "default_branch" = azuredevops_git_repository.myrepo[0].default_branch,
+  content             = templatefile("${path.module}/azure-pipelines-prod.yml", { "default_branch" = azuredevops_git_repository.myrepo[0].default_branch,
     "serviceconnection" = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].service_endpoint_name,
     "tf_bk_rg" = data.azurerm_resource_group.iac_rg[0].name,
     "tf_bk_sa" = local.tf_bk_sa_name,
@@ -220,7 +220,7 @@ resource "azuredevops_git_repository_file" "pipeline_file_test" {
   repository_id       = azuredevops_git_repository.myrepo[0].id
   branch = azuredevops_git_repository.myrepo[0].default_branch
   file                = local.yml_path_test
-  content             = templatefile("azure-pipelines-test.yml", {
+  content             = templatefile("${path.module}/azure-pipelines-test.yml", {
     "default_branch" = azuredevops_git_repository.myrepo[0].default_branch })
   commit_message      = "add ${local.yml_path_test}"
   overwrite_on_create = true
