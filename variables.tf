@@ -90,3 +90,15 @@ variable "deployment_test_sub_id" {
   default = ""
   description = "Subscription to which the test workload should be deployed to."
 }
+
+variable "create_prod_pipeline" {
+  type = bool
+  default = false
+  description = "Create a pipeline for prod. Default: false"
+}
+
+variable "create_test_pipeline" {
+  type = bool
+  default = false
+  description = "Create a pipeline for test. Default: false"
+}

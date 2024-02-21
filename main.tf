@@ -148,3 +148,38 @@ resource "azurerm_storage_account" "tf-state-bucket" {
   enable_https_traffic_only        = true
   provider = azurerm.iac_subscription
 }
+
+/******************************************
+  Azure DevOps pipeline
+*******************************************/
+
+resource "azuredevops_build_definition" "build_prod" {
+  count = var.create_prod_pipeline ? 1 : 0
+  project_id = azuredevops_project.myproject[0].id
+  name       = "${var.resource_prefix} Prod Deploy"
+
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.myrepo[0].id
+    branch_name = azuredevops_git_repository.myrepo[0].default_branch
+    yml_path    = "azure-pipeline-prod.yml"
+  }
+  ci_trigger {
+    use_yaml = true
+  }
+}
+resource "azuredevops_build_definition" "build_test" {
+  count = var.create_test_pipeline ? 1 : 0
+  project_id = azuredevops_project.myproject[0].id
+  name       = "${var.resource_prefix} Test Deploy"
+
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.myrepo[0].id
+    branch_name = azuredevops_git_repository.myrepo[0].default_branch
+    yml_path    = "azure-pipeline-test.yml"
+  }
+  ci_trigger {
+    use_yaml = true
+  }
+}
