@@ -132,11 +132,14 @@ resource "azurerm_role_assignment" "az_sa_role_assignment_test" {
 /******************************************
   TF IaC ressources
 *******************************************/
-
+locals {
+  tf_bk_sa_name = "${var.resource_prefix}tfs"
+  tf_bk_sc_name = "${var.resource_prefix}tfsc"
+}
 ## Storage account for TF states
 resource "azurerm_storage_account" "tf-state-bucket" {
   count = var.remove ? 0 : 1
-  name                = "${var.resource_prefix}tfs"
+  name                = local.tf_bk_sa_name
   resource_group_name = data.azurerm_resource_group.iac_rg[0].name
   location            = data.azurerm_resource_group.iac_rg[0].location
   blob_properties {
@@ -148,13 +151,23 @@ resource "azurerm_storage_account" "tf-state-bucket" {
   enable_https_traffic_only        = true
   provider = azurerm.iac_subscription
 }
+resource "azurerm_storage_container" "tf-state-container" {
+  count = var.remove ? 0 : 1
+  name                  = local.tf_bk_sc_name
+  storage_account_name  = azurerm_storage_account.tf-state-bucket[0].name
+  container_access_type = "blob"
+}
 
 /******************************************
   Azure DevOps pipeline
 *******************************************/
 
+locals {
+  yml_path_prod = "azure-pipeline-prod.yml"
+  yml_path_test = "azure-pipeline-test.yml"
+}
 resource "azuredevops_build_definition" "build_prod" {
-  count = var.create_prod_pipeline ? 1 : 0
+  count = !var.remove && var.create_prod_pipeline ? 1 : 0
   project_id = azuredevops_project.myproject[0].id
   name       = "${var.resource_prefix} Prod Deploy"
 
@@ -162,14 +175,15 @@ resource "azuredevops_build_definition" "build_prod" {
     repo_type   = "TfsGit"
     repo_id     = azuredevops_git_repository.myrepo[0].id
     branch_name = azuredevops_git_repository.myrepo[0].default_branch
-    yml_path    = "azure-pipeline-prod.yml"
+    yml_path    = local.yml_path_prod
   }
   ci_trigger {
     use_yaml = true
   }
 }
+
 resource "azuredevops_build_definition" "build_test" {
-  count = var.create_test_pipeline ? 1 : 0
+  count = !var.remove && var.create_test_pipeline ? 1 : 0
   project_id = azuredevops_project.myproject[0].id
   name       = "${var.resource_prefix} Test Deploy"
 
@@ -177,9 +191,40 @@ resource "azuredevops_build_definition" "build_test" {
     repo_type   = "TfsGit"
     repo_id     = azuredevops_git_repository.myrepo[0].id
     branch_name = azuredevops_git_repository.myrepo[0].default_branch
-    yml_path    = "azure-pipeline-test.yml"
+    yml_path    = local.yml_path_test
   }
   ci_trigger {
     use_yaml = true
+  }
+}
+
+resource "azuredevops_git_repository_file" "pipeline_file_prod" {
+  count = !var.remove && var.create_prod_pipeline ? 1 : 0
+  repository_id       = azuredevops_git_repository.myrepo[0].id
+  branch = azuredevops_git_repository.myrepo[0].default_branch
+  file                = local.yml_path_prod
+  content             = templatefile("azure-pipelines-prod.yml", { "default_branch" = azuredevops_git_repository.myrepo[0].default_branch,
+    "serviceconnection" = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].service_endpoint_name,
+    "tf_bk_rg" = data.azurerm_resource_group.iac_rg[0].name,
+    "tf_bk_sa" = local.tf_bk_sa_name,
+    "tf_bk_sc" = local.tf_bk_sc_name})
+  commit_message      = "add ${local.yml_path_prod}"
+  overwrite_on_create = true
+  lifecycle {
+    ignore_changes = [commit_message]
+  }
+}
+
+resource "azuredevops_git_repository_file" "pipeline_file_test" {
+  count = !var.remove && var.create_test_pipeline ? 1 : 0
+  repository_id       = azuredevops_git_repository.myrepo[0].id
+  branch = azuredevops_git_repository.myrepo[0].default_branch
+  file                = local.yml_path_test
+  content             = templatefile("azure-pipelines-test.yml", {
+    "default_branch" = azuredevops_git_repository.myrepo[0].default_branch })
+  commit_message      = "add ${local.yml_path_test}"
+  overwrite_on_create = true
+  lifecycle {
+    ignore_changes = [commit_message]
   }
 }
