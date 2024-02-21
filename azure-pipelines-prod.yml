@@ -1,0 +1,36 @@
+name: $(BuildDefinitionName)$(SourceBranchName)$(date:yyyyMMdd)$(rev:.r)
+
+trigger:
+- ${default_branch}
+
+pool:
+  vmImage: ubuntu-latest
+
+variables: # terraform variables
+  ServiceConnectionName: '${serviceconnection}'
+  bk-rg-name: '${tf_bk_rg}'
+  bk-str-account-name: '${tf_bk_sa}'
+  bk-container-name: '${tf_bk_sc}'
+  bk-key: 'terraform.tfstate' # key is actually name of the file, determined here
+
+stages:
+  - stage: validate_terraform
+    displayName: 'Validate Terraform'
+    jobs:
+     - job: validate_tf
+        steps:
+          - task: TerraformInstaller@1 # 1st/ install terraform
+            displayName: 'Install Terraform' # install always need to be installed at every stage
+            inputs:
+              terraformVersion: 'latest'
+          - task: TerraformTaskV4@4
+            displayName: 'Initialise Terraform' # init needs to be installed at every stage
+            inputs:
+              provider: 'azurerm'
+              command: init
+              # fetched from variables (azure-pipeline.yml)
+              backendServiceArm: $(ServiceConnectionName)
+              backendAzureRmResourceGroupName: '$(bk-rg-name)'  
+              backendAzureRmStorageAccountName: '$(bk-str-account-name)'  
+              backendAzureRmContainerName: '$(bk-container-name)'  
+              backendAzureRmKey: '$(bk-key)' 
