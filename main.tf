@@ -15,7 +15,7 @@ resource "azuredevops_project" "myproject" {
 }
 
 locals {
-  repo_name = length(var.repo_name) > 0 ? var.repo_name : "${var.devops_project_name}"
+  repo_name = length(var.repo_name) > 0 ? var.repo_name : "${var.devops_project_name}_repo"
 }
 resource "azuredevops_git_repository" "myrepo" {
   count = var.remove ? 0 : 1
@@ -23,14 +23,6 @@ resource "azuredevops_git_repository" "myrepo" {
   name       = local.repo_name
   initialization {
     init_type = "Clean"
-  }
-  lifecycle {
-    ignore_changes = [
-      # Ignore changes to initialization to support importing existing repositories
-      # Given that a repo now exists, either imported into terraform state or created by terraform,
-      # we don't care for the configuration of initialization against the existing resource
-      initialization,
-    ]
   }
 }
 
