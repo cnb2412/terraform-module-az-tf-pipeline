@@ -207,7 +207,10 @@ resource "azuredevops_git_repository_file" "pipeline_file_prod" {
     "serviceconnection" = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].service_endpoint_name,
     "tf_bk_rg" = data.azurerm_resource_group.iac_rg[0].name,
     "tf_bk_sa" = local.tf_bk_sa_name,
-    "tf_bk_sc" = local.tf_bk_sc_name})
+    "tf_bk_sc" = local.tf_bk_sc_name,
+    "tenant_id" = data.azurerm_subscription.current.tenant_id,
+    "iac_subscription" = var.iac_resources_sub,
+    "client_id" = azurerm_user_assigned_identity.managed_identity_prod[0].client_id })
   commit_message      = "add ${local.yml_path_prod}"
   overwrite_on_create = true
   lifecycle {

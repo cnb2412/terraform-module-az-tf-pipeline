@@ -7,30 +7,55 @@ pool:
   vmImage: ubuntu-latest
 
 variables: # terraform variables
-  ServiceConnectionName: '${serviceconnection}'
+  ServiceConnectionName: '${serviceconnection}' #used?
   bk-rg-name: '${tf_bk_rg}'
   bk-str-account-name: '${tf_bk_sa}'
   bk-container-name: '${tf_bk_sc}'
   bk-key: 'terraform.tfstate' # key is actually name of the file, determined here
+  tenant: '${tenant_id}'
+  iac_subscription: ${iac_subscription}
+  client_id: ${client_id}
 
 stages:
   - stage: validate_terraform
     displayName: 'Validate Terraform'
     jobs:
-     - job: validate_tf
-        steps:
-          - task: TerraformInstaller@1 # 1st/ install terraform
-            displayName: 'Install Terraform' # install always need to be installed at every stage
-            inputs:
-              terraformVersion: 'latest'
-          - task: TerraformTaskV4@4
-            displayName: 'Initialise Terraform' # init needs to be installed at every stage
-            inputs:
-              provider: 'azurerm'
-              command: init
-              # fetched from variables (azure-pipeline.yml)
-              backendServiceArm: $(ServiceConnectionName)
-              backendAzureRmResourceGroupName: '$(bk-rg-name)'  
-              backendAzureRmStorageAccountName: '$(bk-str-account-name)'  
-              backendAzureRmContainerName: '$(bk-container-name)'  
-              backendAzureRmKey: '$(bk-key)' 
+      - job: validate_tf
+        - task: AzureCLI@2
+          displayName: Pre flight
+          inputs:
+            azureSubscription: $(serviceConnection)
+            scriptLocation: inlineScript
+            scriptType: bash
+            inlineScript: |
+              set -eu  # fail on error
+              # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
+        - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
+          displayName: tf init
+          inputs:
+            azureSubscription: $(serviceConnection)
+            scriptLocation: inlineScript
+            scriptType: bash
+            inlineScript: |
+              set -eu  # fail on error
+              export ARM_USE_MSI=true
+              export ARM_SUBSCRIPTION_ID=$(iac_subscription)
+              export ARM_TENANT_ID=$(tenant_id)
+              export ARM_CLIENT_ID=$(client_id)
+              terraform init \
+              -input=false \
+              -backend-config=storage_account_name=$(bk-str-account-name) \
+              -backend-config=container_name=$(bk-container-name) \
+              -backend-config=key=$(Build.Repository.Name).tfstate \
+              -backend-config=resource_group_name=$(bk-rg-name) \
+              -backend-config=use_azuread_auth=true
+        - task: AzureCLI@2
+          displayName: tf plan
+          inputs:
+            azureSubscription: $(serviceConnection)
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              set -eu  # fail on error
+              terraform plan \
+              -input=false -out=tf_plan.out
