@@ -32,6 +32,7 @@ stages:
                 set -eu  # fail on error
                 # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
                 az account show --query id -o tsv
+                echo 'terraform {\n backend "gcs" { \n }\n }' > backend.tf
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
             inputs:
@@ -52,6 +53,15 @@ stages:
                 -backend-config=resource_group_name=$(bk-rg-name) \
                 -backend-config=use_azuread_auth=true
           - task: AzureCLI@2
+            displayName: tf validate
+            inputs:
+              azureSubscription: ${serviceconnection}
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -eu  # fail on error
+                terraform validate
+          - task: AzureCLI@2
             displayName: tf plan
             inputs:
               azureSubscription: ${serviceconnection}
@@ -61,3 +71,12 @@ stages:
                 set -eu  # fail on error
                 terraform plan \
                 -input=false -out=tf_plan.out
+          - task: AzureCLI@2
+            displayName: tf apply
+            inputs:
+              azureSubscription: ${serviceconnection}
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -eu  # fail on error
+                terraform apply -parallelism=2 -input=false -auto-approve tf_plan.out
