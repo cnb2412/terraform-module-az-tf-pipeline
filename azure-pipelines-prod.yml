@@ -41,17 +41,14 @@ stages:
               scriptType: bash
               inlineScript: |
                 set -eu  # fail on error
-                export ARM_USE_MSI=true
-                export ARM_SUBSCRIPTION_ID=$(iac_subscription)
-                export ARM_TENANT_ID=$(tenant)
-                export ARM_CLIENT_ID=$(client_id)
                 terraform init \
                 -input=false \
                 -backend-config=storage_account_name=$(bk-str-account-name) \
                 -backend-config=container_name=$(bk-container-name) \
                 -backend-config=key=$(Build.Repository.Name).tfstate \
-                -backend-config=resource_group_name=$(bk-rg-name) \
-                -backend-config=use_azuread_auth=true
+                -backend-config=use_azuread_auth=true \
+                -backend-config=subscription_id=$iac_subscription) \
+                -backend-config=tenant_id=$(tenant_id)
           - task: AzureCLI@2
             displayName: tf validate
             inputs:
