@@ -36,17 +36,20 @@ stages:
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
             inputs:
+              addSpnToEnvironment: true
               azureSubscription: ${serviceconnection}
               scriptLocation: inlineScript
               scriptType: bash
               inlineScript: |
                 set -eu  # fail on error
+                export ARM_CLIENT_ID=$servicePrincipalId
+                export ARM_OIDC_TOKEN=$idToken
                 terraform init \
                 -input=false \
                 -backend-config=storage_account_name=$(bk-str-account-name) \
                 -backend-config=container_name=$(bk-container-name) \
                 -backend-config=key=$(Build.Repository.Name).tfstate \
-                -backend-config=use_msi=true \
+                -backend-config=use_oidc=true \
                 -backend-config=subscription_id=$(iac_subscription) \
                 -backend-config=tenant_id=$(tenant) \
                 -backend-config=resource_group_name=$(bk-rg-name)
