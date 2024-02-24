@@ -47,7 +47,7 @@ stages:
                 -backend-config=container_name=$(bk-container-name) \
                 -backend-config=key=$(Build.Repository.Name).tfstate \
                 -backend-config=use_azuread_auth=true \
-                -backend-config=subscription_id=$iac_subscription) \
+                -backend-config=subscription_id=$(iac_subscription) \
                 -backend-config=tenant_id=$(tenant_id)
           - task: AzureCLI@2
             displayName: tf validate
