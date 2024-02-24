@@ -7,7 +7,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables: # terraform variables
-  ServiceConnectionName: '${serviceconnection}' #used?
+  ServiceConnectionName: '${serviceconnection}'
   bk-rg-name: '${tf_bk_rg}'
   bk-str-account-name: '${tf_bk_sa}'
   bk-container-name: '${tf_bk_sc}'
@@ -31,6 +31,7 @@ stages:
               inlineScript: |
                 set -eu  # fail on error
                 # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
+                az account show --query id -o tsv
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
             inputs:
