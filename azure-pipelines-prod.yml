@@ -25,7 +25,7 @@ stages:
           - task: AzureCLI@2
             displayName: Pre flight
             inputs:
-              azureSubscription: $(serviceConnection)
+              azureSubscription: ${serviceconnection}
               scriptLocation: inlineScript
               scriptType: bash
               inlineScript: |
@@ -35,7 +35,7 @@ stages:
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
             inputs:
-              azureSubscription: $(serviceConnection)
+              azureSubscription: ${serviceconnection}
               scriptLocation: inlineScript
               scriptType: bash
               inlineScript: |
@@ -54,7 +54,7 @@ stages:
           - task: AzureCLI@2
             displayName: tf plan
             inputs:
-              azureSubscription: $(serviceConnection)
+              azureSubscription: ${serviceconnection}
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
