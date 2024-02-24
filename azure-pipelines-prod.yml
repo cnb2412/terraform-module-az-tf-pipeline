@@ -7,12 +7,12 @@ pool:
   vmImage: ubuntu-latest
 
 variables: # terraform variables
-  ServiceConnectionName: '${serviceconnection}'
-  bk-rg-name: '${tf_bk_rg}'
-  bk-str-account-name: '${tf_bk_sa}'
-  bk-container-name: '${tf_bk_sc}'
+  ServiceConnectionName: ${serviceconnection}
+  bk-rg-name: ${tf_bk_rg}
+  bk-str-account-name: ${tf_bk_sa}
+  bk-container-name: ${tf_bk_sc}
   bk-key: 'terraform.tfstate' # key is actually name of the file, determined here
-  tenant: '${tenant_id}'
+  tenant: ${tenant_id}
   iac_subscription: ${iac_subscription}
   client_id: ${client_id}
 
