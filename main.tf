@@ -159,13 +159,13 @@ resource "azurerm_storage_container" "tf-state-container" {
 }
 
 #allow ServicePrinciple for pipeline to access the storage account with the TF state
-resource "azurerm_role_assignment" "az_sa_role_assignment_prod" {
+resource "azurerm_role_assignment" "az_sa_role_assignment_sa_prod" {
   count = !var.remove && var.create_service_principle_prod ? 1 : 0
   scope              = azurerm_storage_account.tf-state-bucket[0].id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id       = azurerm_user_assigned_identity.managed_identity_prod[0].principal_id
 }
-resource "azurerm_role_assignment" "az_sa_role_assignment_test" {
+resource "azurerm_role_assignment" "az_sa_role_assignment_sa_test" {
   count = !var.remove && var.create_service_principle_test ? 1 : 0
   scope              = azurerm_storage_account.tf-state-bucket[0].id
   role_definition_name = "Storage Blob Data Contributor"
