@@ -43,7 +43,7 @@ stages:
                 set -eu  # fail on error
                 export ARM_USE_MSI=true
                 export ARM_SUBSCRIPTION_ID=$(iac_subscription)
-                export ARM_TENANT_ID=$(tenant_id)
+                export ARM_TENANT_ID=$(tenant)
                 export ARM_CLIENT_ID=$(client_id)
                 terraform init \
                 -input=false \
