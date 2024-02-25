@@ -13,10 +13,7 @@ variables: # terraform variables
   bk-container-name: ${tf_bk_sc}
   bk-key: 'terraform.tfstate' # key is actually name of the file, determined here
   iac_subscription: ${iac_subscription}
-  ARM_USE_OIDC: true
-  ARM_CLIENT_ID: ${client_id}
-  ARM_TENANT_ID: ${tenant_id}
-  ARM_SUBSCRIPTION_ID:  ${deploy_subscription}
+
 
 stages:
   - stage: terraform_deploy
