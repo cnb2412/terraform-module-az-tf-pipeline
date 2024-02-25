@@ -42,7 +42,7 @@ stages:
               scriptType: bash
               inlineScript: |
                 set -eu  # fail on error
-                export ARM_CLIENT_ID=$servicePrincipalId
+                export ARM_CLIENT_ID=$(client_id)
                 export ARM_OIDC_TOKEN=$idToken
                 terraform init \
                 -input=false \
