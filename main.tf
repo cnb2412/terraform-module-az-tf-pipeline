@@ -171,6 +171,18 @@ resource "azurerm_role_assignment" "az_sa_role_assignment_sa_test" {
   role_definition_name = "Storage Blob Data Contributor"
   principal_id       = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
 }
+resource "azurerm_role_assignment" "az_sa_role_assignment_sa_prod_sa_contrib_role" {
+  count = !var.remove && var.create_service_principle_prod ? 1 : 0
+  scope              = azurerm_storage_account.tf-state-bucket[0].id
+  role_definition_name = "Storage Account Contributor"
+  principal_id       = azurerm_user_assigned_identity.managed_identity_prod[0].principal_id
+}
+resource "azurerm_role_assignment" "az_sa_role_assignment_sa_test_sa_contrib_role" {
+  count = !var.remove && var.create_service_principle_test ? 1 : 0
+  scope              = azurerm_storage_account.tf-state-bucket[0].id
+  role_definition_name = "Storage Account Contributor"
+  principal_id       = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
+}
 
 
 /******************************************
