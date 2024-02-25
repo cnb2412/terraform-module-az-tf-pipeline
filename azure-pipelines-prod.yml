@@ -36,6 +36,9 @@ stages:
                 # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
                 az account show --query id -o tsv
                 echo  -e 'terraform {\n backend "azurerm" {}\n }' > backend.tf
+                echo "debug: use oidc $ARM_USE_OIDC"
+                echo "debug: use client id  $ARM_CLIENT_ID"
+                echo "debug: env subscription  $ARM_SUBSCRIPTION_ID"
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
             inputs:
