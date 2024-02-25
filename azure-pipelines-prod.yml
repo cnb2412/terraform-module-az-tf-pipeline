@@ -69,10 +69,12 @@ stages:
             displayName: tf plan
             inputs:
               azureSubscription: ${serviceconnection}
+              addSpnToEnvironment: true
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
                 set -eu  # fail on error
+                ARM_OIDC_TOKEN=$idToken \
                 terraform plan \
                 -input=false -out=tf_plan.out
           - task: AzureCLI@2
