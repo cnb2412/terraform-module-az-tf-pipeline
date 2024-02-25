@@ -18,10 +18,10 @@ variables: # terraform variables
   client_id: ${client_id}
 
 stages:
-  - stage: validate_terraform
-    displayName: 'Validate Terraform'
+  - stage: terraform_deploy
+    displayName: 'Terraform deployment'
     jobs:
-      - job: validate_tf
+      - job: deploy_tf
         steps:
           - task: AzureCLI@2
             displayName: Pre flight
@@ -74,6 +74,7 @@ stages:
                 export ARM_CLIENT_ID=$(client_id)
                 export ARM_SUBSCRIPTION_ID=$(deploy_subscription)
                 export ARM_TENANT_ID=$(tenant)
+                export ARM_USE_OIDC=true
                 terraform plan \
                 -input=false -out=tf_plan.out
           - task: AzureCLI@2
