@@ -45,8 +45,10 @@ stages:
               azureSubscription: ${serviceconnection}
               scriptLocation: inlineScript
               scriptType: bash
+              addSpnToEnvironment: true
               inlineScript: |
                 set -eu  # fail on error
+                ARM_OIDC_TOKEN=$idToken \
                 terraform init \
                 -input=false \
                 -backend-config=storage_account_name=$(bk-str-account-name) \
