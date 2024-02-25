@@ -237,7 +237,8 @@ resource "azuredevops_git_repository_file" "pipeline_file_prod" {
     "tf_bk_sc" = local.tf_bk_sc_name,
     "tenant_id" = data.azurerm_subscription.current.tenant_id,
     "iac_subscription" = var.iac_resources_sub,
-    "client_id" = azurerm_user_assigned_identity.managed_identity_prod[0].client_id })
+    "client_id" = azurerm_user_assigned_identity.managed_identity_prod[0].client_id,
+    "deploy_subscription" = var.deployment_prod_sub_id })
   commit_message      = "add ${local.yml_path_prod}"
   overwrite_on_create = true
   lifecycle {

@@ -14,6 +14,7 @@ variables: # terraform variables
   bk-key: 'terraform.tfstate' # key is actually name of the file, determined here
   tenant: ${tenant_id}
   iac_subscription: ${iac_subscription}
+  deploy_subscription: ${deploy_subscription}
   client_id: ${client_id}
 
 stages:
@@ -70,6 +71,9 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 set -eu  # fail on error
+                export ARM_CLIENT_ID=$(client_id)
+                export ARM_SUBSCRIPTION_ID=$(deploy_subscription)
+                export ARM_TENANT_ID=$(tenant)
                 terraform plan \
                 -input=false -out=tf_plan.out
           - task: AzureCLI@2
