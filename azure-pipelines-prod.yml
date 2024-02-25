@@ -12,10 +12,11 @@ variables: # terraform variables
   bk-str-account-name: ${tf_bk_sa}
   bk-container-name: ${tf_bk_sc}
   bk-key: 'terraform.tfstate' # key is actually name of the file, determined here
-  tenant: ${tenant_id}
   iac_subscription: ${iac_subscription}
-  deploy_subscription: ${deploy_subscription}
-  client_id: ${client_id}
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${client_id}
+  ARM_TENANT_ID: ${tenant_id}
+  ARM_SUBSCRIPTION_ID:  ${deploy_subscription}
 
 stages:
   - stage: terraform_deploy
@@ -34,11 +35,7 @@ stages:
                 set -eu  # fail on error
                 # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
                 az account show --query id -o tsv
-                echo "##vso[task.setvariable variable=ARM_USE_OIDC;]true"
                 echo "##vso[task.setvariable variable=ARM_OIDC_TOKEN;issecret=true]$idToken"
-                echo "##vso[task.setvariable variable=ARM_CLIENT_ID;]$(client_id)"
-                echo "##vso[task.setvariable variable=ARM_TENANT_ID;]$(tenant)"
-                echo "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID;]$(deploy_subscription)"
                 echo  -e 'terraform {\n backend "azurerm" {}\n }' > backend.tf
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
@@ -53,9 +50,7 @@ stages:
                 -backend-config=storage_account_name=$(bk-str-account-name) \
                 -backend-config=container_name=$(bk-container-name) \
                 -backend-config=key=$(Build.Repository.Name).tfstate \
-                -backend-config=use_oidc=true \
                 -backend-config=subscription_id=$(iac_subscription) \
-                -backend-config=tenant_id=$(tenant) \
                 -backend-config=resource_group_name=$(bk-rg-name)
           - task: AzureCLI@2
             displayName: tf validate
