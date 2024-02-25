@@ -83,6 +83,8 @@ stages:
               azureSubscription: ${serviceconnection}
               scriptType: bash
               scriptLocation: inlineScript
+              addSpnToEnvironment: true
               inlineScript: |
                 set -eu  # fail on error
+                ARM_OIDC_TOKEN=$idToken \
                 terraform apply -parallelism=2 -input=false -auto-approve tf_plan.out
