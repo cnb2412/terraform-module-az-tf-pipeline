@@ -51,7 +51,8 @@ stages:
                 -backend-config=key=$(Build.Repository.Name).tfstate \
                 -backend-config=use_oidc=true \
                 -backend-config=subscription_id=$(iac_subscription) \
-                -backend-config=tenant_id=$(tenant)
+                -backend-config=tenant_id=$(tenant) \
+                -backend-config=resource_group_name=$(bk-rg-name)
           - task: AzureCLI@2
             displayName: tf validate
             inputs:
