@@ -29,9 +29,13 @@ stages:
               addSpnToEnvironment: true
               azureSubscription: ${serviceconnection}
               scriptLocation: inlineScript
-              scriptType: pscore
+              scriptType: bash
               inlineScript: |
-                Write-Host "##vso[task.setvariable variable=ARM_USE_OIDC]true"
+                set -eu  # fail on error
+                # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
+                az account show --query id -o tsv
+                echo '##vso[task.setvariable variable=ARMBLUB;]true'
+                echo  -e 'terraform {\n backend "azurerm" {}\n }' > backend.tf
           - task: AzureCLI@2 #we need to be loged in to AZ, so we use AzureCLI@2 instead of bash, for backend connection
             displayName: tf init
             inputs:
