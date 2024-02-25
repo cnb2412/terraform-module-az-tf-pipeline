@@ -35,7 +35,6 @@ stages:
                 # Terraform allow auth via Azure CLI only with user, but not with Service Principle. Thus, this mess
                 az account show --query id -o tsv
                 echo  -e 'terraform {\n backend "azurerm" {}\n }' > backend.tf
-                echo "##vso[task.setvariable variable=ARM_USE_OIDC]true"
                 echo "##vso[task.setvariable variable=ARM_OIDC_TOKEN;issecret=true]$idToken"
                 echo "##vso[task.setvariable variable=ARM_CLIENT_ID]$client_id"
                 echo "##vso[task.setvariable variable=ARM_TENANT_ID]$tenant"
