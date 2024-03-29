@@ -38,67 +38,55 @@ variable "iac_ressources_rg" {
 }
 
 variable "remove" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Option to remove everything. Required to avoid provider removed issues."
 }
 
 variable "create_service_principle_prod" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Create service principle DevOps service connection for prod deployment"
 }
 
 variable "create_service_principle_test" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Create service principle and DevOps service connection for test deployment"
 }
 
-variable "service_principle_owner_prod" {
-  type        = string
-  description = "Email of the owner of the prod service principle"
-  default = ""
-}
-
-variable "service_principle_owner_test" {
-  type        = string
-  description = "Email of the owner of the test service principle"
-  default = ""
-}
-
 variable "deployment_prod_tenant_id" {
-  type =  string
-  default = ""
+  type        = string
+  default     = ""
   description = "TenantId to which the prod workload should be deployed to. If not set, current Tenant is used."
 }
 
 variable "deployment_test_tenant_id" {
-  type =  string
-  default = ""
+  type        = string
+  default     = ""
   description = "TenantId to which the test workload should be deployed to. If not set, current Tenant is used."
 }
 
 variable "deployment_prod_sub_id" {
-  type =  string
-  default = ""
+  type        = string
+  default     = ""
   description = "Subscription to which the prod workload should be deployed to."
 }
 
 variable "deployment_test_sub_id" {
-  type =  string
-  default = ""
+  type        = string
+  default     = ""
   description = "Subscription to which the test workload should be deployed to."
 }
 
 variable "create_prod_pipeline" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Create a pipeline for prod. Default: false"
 }
 
 variable "create_test_pipeline" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Create a pipeline for test. Default: false"
 }

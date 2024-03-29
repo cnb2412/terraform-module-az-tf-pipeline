@@ -1,0 +1,58 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  # BASIC CONF FOR ALL PRE-COMMITS REPO TYPE
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        stages: [commit]
+      - id: end-of-file-fixer
+        exclude: /secrets
+        stages: [commit]
+      - id: check-added-large-files
+        stages: [commit]
+      - id: check-yaml
+        args:
+          - "--allow-multiple-documents"
+        exclude: /templates|/secrets
+        stages: [commit]
+      - id: check-json
+        stages: [commit]
+      - id: check-toml
+        stages: [commit]
+      - id: check-shebang-scripts-are-executable
+        stages: [commit]
+
+  # - repo: https://github.com/compilerla/conventional-pre-commit
+  #   rev: v2.1.1
+  #   hooks:
+  #     - id: conventional-pre-commit
+  #       stages: [commit-msg]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.1
+    hooks:
+      - id: gitleaks
+  # SPECIFIC CONF FOR TERRAFORM MODULE REPOSITORIES
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.88.0
+    hooks:
+      - id: terraform_fmt
+        args:
+          - --args=-diff
+          - --args=-write=true
+        stages: [commit]
+      - id: terraform_docs
+        stages: [commit]
+      - id: terraform_tflint
+        files: \.tf$
+        # args:
+        #   - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+        stages: [commit]
+      - id: terraform_trivy
+        files: \.tf$
+        args:
+          - >
+            --args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore
+        stages: [commit]
