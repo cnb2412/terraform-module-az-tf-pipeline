@@ -1,2 +1,16 @@
-# Accept Risk Public Access to Storage Account required for devops pipeline
-AVD-AZU-0007
+# Default network_default_action is "Allow" so Microsoft-Hosted pipeline agents
+# can reach the state storage account. Module exposes network_default_action /
+# network_ip_rules / network_subnet_ids for hardening with self-hosted agents.
+AZU-0012
+
+# Storage Analytics logging is deprecated; diagnostic settings via Azure Monitor
+# are managed centrally outside this module.
+AZU-0057
+
+# Default replication is ZRS (three availability zones) -- sufficient for a
+# small TF state file. Consumers can opt into GRS via account_replication_type.
+AZU-0058
+
+# Customer-managed keys are out of scope. Service-managed keys plus AAD auth
+# (shared_access_key_enabled = false) provide an acceptable baseline.
+AZU-0060

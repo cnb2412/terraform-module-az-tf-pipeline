@@ -4,6 +4,7 @@
 resource "azuredevops_project" "myproject" {
   count              = var.remove ? 0 : 1
   name               = var.devops_project_name
+  description        = var.devops_project_description
   visibility         = var.public_project ? "public" : "private"
   version_control    = "Git"
   work_item_template = "Basic"
@@ -18,9 +19,10 @@ locals {
   repo_name = length(var.repo_name) > 0 ? var.repo_name : "${var.devops_project_name}_repo"
 }
 resource "azuredevops_git_repository" "myrepo" {
-  count      = var.remove ? 0 : 1
-  project_id = azuredevops_project.myproject[0].id
-  name       = local.repo_name
+  count          = var.remove ? 0 : 1
+  project_id     = azuredevops_project.myproject[0].id
+  name           = local.repo_name
+  default_branch = var.default_branch
   initialization {
     init_type = "Clean"
   }
@@ -119,13 +121,13 @@ resource "azurerm_federated_identity_credential" "test" {
 resource "azurerm_role_assignment" "az_sa_role_assignment_prod" {
   count                = !var.remove && var.create_service_principle_prod ? 1 : 0
   scope                = data.azurerm_subscription.deployment_prod[0].id
-  role_definition_name = "Contributor"
+  role_definition_name = var.deployment_role_definition_name
   principal_id         = azurerm_user_assigned_identity.managed_identity_prod[0].principal_id
 }
 resource "azurerm_role_assignment" "az_sa_role_assignment_test" {
   count                = !var.remove && var.create_service_principle_test ? 1 : 0
   scope                = data.azurerm_subscription.deployment_test[0].id
-  role_definition_name = "Contributor"
+  role_definition_name = var.deployment_role_definition_name
   principal_id         = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
 }
 
@@ -144,19 +146,40 @@ resource "azurerm_storage_account" "tf-state-bucket" {
   location            = data.azurerm_resource_group.iac_rg[0].location
   blob_properties {
     versioning_enabled = true
+    delete_retention_policy {
+      days = 30
+    }
+    container_delete_retention_policy {
+      days = 30
+    }
   }
-  account_tier                     = "Standard"
-  account_replication_type         = "GRS"
-  cross_tenant_replication_enabled = false
-  enable_https_traffic_only        = true
-  min_tls_version                  = "TLS1_2"
-  provider                         = azurerm.iac_subscription
+  network_rules {
+    default_action             = var.network_default_action
+    bypass                     = var.network_bypass
+    ip_rules                   = var.network_ip_rules
+    virtual_network_subnet_ids = var.network_subnet_ids
+  }
+  account_tier                      = "Standard"
+  account_replication_type          = var.account_replication_type
+  cross_tenant_replication_enabled  = false
+  https_traffic_only_enabled        = true
+  min_tls_version                   = "TLS1_2"
+  shared_access_key_enabled         = false
+  allow_nested_items_to_be_public   = false
+  infrastructure_encryption_enabled = true
+  tags                              = var.tags
+  provider                          = azurerm.iac_subscription
+  lifecycle {
+    # infrastructure_encryption_enabled can only be set at creation time;
+    # ignore it on existing accounts to avoid forced re-creation.
+    ignore_changes = [infrastructure_encryption_enabled]
+  }
 }
 resource "azurerm_storage_container" "tf-state-container" {
   count                 = var.remove ? 0 : 1
   name                  = local.tf_bk_sc_name
-  storage_account_name  = azurerm_storage_account.tf-state-bucket[0].name
-  container_access_type = "blob"
+  storage_account_id    = azurerm_storage_account.tf-state-bucket[0].id
+  container_access_type = "private"
 }
 
 #allow ServicePrinciple for pipeline to access the storage account with the TF state
@@ -172,18 +195,6 @@ resource "azurerm_role_assignment" "az_sa_role_assignment_sa_test" {
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
 }
-resource "azurerm_role_assignment" "az_sa_role_assignment_sa_prod_sa_contrib_role" {
-  count                = !var.remove && var.create_service_principle_prod ? 1 : 0
-  scope                = azurerm_storage_account.tf-state-bucket[0].id
-  role_definition_name = "Storage Account Contributor"
-  principal_id         = azurerm_user_assigned_identity.managed_identity_prod[0].principal_id
-}
-resource "azurerm_role_assignment" "az_sa_role_assignment_sa_test_sa_contrib_role" {
-  count                = !var.remove && var.create_service_principle_test ? 1 : 0
-  scope                = azurerm_storage_account.tf-state-bucket[0].id
-  role_definition_name = "Storage Account Contributor"
-  principal_id         = azurerm_user_assigned_identity.managed_identity_test[0].principal_id
-}
 
 
 /******************************************
@@ -195,9 +206,10 @@ locals {
   yml_path_test = "azure-pipeline-test.yml"
 }
 resource "azuredevops_build_definition" "build_prod" {
-  count      = !var.remove && var.create_prod_pipeline ? 1 : 0
-  project_id = azuredevops_project.myproject[0].id
-  name       = "${var.resource_prefix} Prod Deploy"
+  count           = !var.remove && var.create_prod_pipeline ? 1 : 0
+  project_id      = azuredevops_project.myproject[0].id
+  name            = "${var.resource_prefix} Prod Deploy"
+  agent_pool_name = var.agent_pool_name
 
   repository {
     repo_type   = "TfsGit"
@@ -211,9 +223,10 @@ resource "azuredevops_build_definition" "build_prod" {
 }
 
 resource "azuredevops_build_definition" "build_test" {
-  count      = !var.remove && var.create_test_pipeline ? 1 : 0
-  project_id = azuredevops_project.myproject[0].id
-  name       = "${var.resource_prefix} Test Deploy"
+  count           = !var.remove && var.create_test_pipeline ? 1 : 0
+  project_id      = azuredevops_project.myproject[0].id
+  name            = "${var.resource_prefix} Test Deploy"
+  agent_pool_name = var.agent_pool_name
 
   repository {
     repo_type   = "TfsGit"
