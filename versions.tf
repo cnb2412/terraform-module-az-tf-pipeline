@@ -17,11 +17,8 @@ provider "azuredevops" {
 }
 
 provider "azurerm" {
-  subscription_id = var.iac_resources_sub
-  features {
-    resource_group {
-      prevent_deletion_if_contains_resources = true
-    }
-  }
+  subscription_id     = var.iac_resources_sub
+  storage_use_azuread = true
+  features {}
   alias = "iac_subscription"
 }
