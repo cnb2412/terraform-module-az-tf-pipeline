@@ -95,21 +95,21 @@ resource "azuredevops_serviceendpoint_azurerm" "arm_serviceconnection_test" {
 }
 
 resource "azurerm_federated_identity_credential" "prod" {
-  count     = !var.remove && var.create_service_principle_prod ? 1 : 0
-  name      = "${var.resource_prefix}-federated-credential_prod"
-  parent_id = azurerm_user_assigned_identity.managed_identity_prod[0].id
-  audience  = ["api://AzureADTokenExchange"]
-  issuer    = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].workload_identity_federation_issuer
-  subject   = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].workload_identity_federation_subject
+  count                     = !var.remove && var.create_service_principle_prod ? 1 : 0
+  name                      = "${var.resource_prefix}-federated-credential_prod"
+  user_assigned_identity_id = azurerm_user_assigned_identity.managed_identity_prod[0].id
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].workload_identity_federation_issuer
+  subject                   = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_prod[0].workload_identity_federation_subject
 }
 
 resource "azurerm_federated_identity_credential" "test" {
-  count     = !var.remove && var.create_service_principle_test ? 1 : 0
-  name      = "${var.resource_prefix}-federated-credential_test"
-  parent_id = azurerm_user_assigned_identity.managed_identity_test[0].id
-  audience  = ["api://AzureADTokenExchange"]
-  issuer    = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_issuer
-  subject   = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_subject
+  count                     = !var.remove && var.create_service_principle_test ? 1 : 0
+  name                      = "${var.resource_prefix}-federated-credential_test"
+  user_assigned_identity_id = azurerm_user_assigned_identity.managed_identity_test[0].id
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_issuer
+  subject                   = azuredevops_serviceendpoint_azurerm.arm_serviceconnection_test[0].workload_identity_federation_subject
 }
 
 /******************************************
